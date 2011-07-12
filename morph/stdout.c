@@ -52,6 +52,11 @@ chno_raw_print(chno_t * mbr) {
 }
 
 void
+chno_int64_print(chno_t * mbr) {
+    printf(" %zd", M_INT64(mbr));
+}
+
+void
 chno_uint64_print(chno_t * mbr) {
     printf(" %zu", M_UINT64(mbr));
 }
@@ -81,6 +86,8 @@ chno_print_m(chno_t * mbr) {
             return chno_raw_print(mbr);
         case M_TYPE_UINT64:
             return chno_uint64_print(mbr);
+        case M_TYPE_INT64:
+            return chno_int64_print(mbr);
         default:
             printf(",");
             return;

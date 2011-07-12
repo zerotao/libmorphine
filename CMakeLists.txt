@@ -16,7 +16,7 @@ find_package(LibZt)
 find_package(LibEvent)
 find_package(LibJSONC)
 find_package(Lua)
-find_package(LuaLib)
+#find_package(LuaLib)
 find_package(LibZ)
 
 set (MORPHINE_SOURCES
@@ -50,7 +50,7 @@ set(MORPHINE_EXTERNAL_LIBS
 	${LIBZT_LIBRARIES}
 	${LIBEVENT_LIBRARY}
 	${LUA_LIBRARIES}
-  ${LIALUB_LIBRARIES}
+  ${LUALIB_LIBRARIES}
 	${LIBJSONC_LIBRARIES}
   ${LIBZ_LIBRARIES}
 )
@@ -60,6 +60,7 @@ set_target_properties(libmorphine PROPERTIES OUTPUT_NAME "morphine")
 target_link_libraries(libmorphine ${MORPHINE_EXTERNAL_LIBS})
 
 
-add_executable(maps ${CMAKE_CURRENT_SOURCE_DIR}/examples/maps.c)
-
-target_link_libraries(maps libmorphine)
+add_executable(chno_example ${CMAKE_CURRENT_SOURCE_DIR}/examples/chno_example.c)
+target_link_libraries(chno_example libmorphine)
+add_executable(chno_lua_example ${CMAKE_CURRENT_SOURCE_DIR}/examples/chno_lua_example.c)
+target_link_libraries(chno_lua_example libmorphine ${LUA_LIBRARIES} ${LUALIB_LIBRARIES})

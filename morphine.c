@@ -404,6 +404,7 @@ chno_len(chno_t * m) {
     char         * str = NULL;
     chno_array_t * arr = NULL;
     chno_map_t   * map = NULL;
+    chno_raw_t   * raw = NULL;
 
     if (m == NULL) {
         return 0;
@@ -432,6 +433,11 @@ chno_len(chno_t * m) {
             }
 
             return (uint32_t)strlen(str);
+        case M_TYPE_RAW:
+            if (!(raw = chno_raw(m, &err, NULL))) {
+                return 0;
+            }
+            return (uint32_t)raw->len;
         default:
             break;
     } /* switch */

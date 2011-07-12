@@ -35,10 +35,10 @@ chno_from_lua_s(lua_State * L) {
 
         switch (lua_type(L, -1)) {
             case LUA_TNUMBER:
-                if (lua_tonumber(L, -1) > INT32_MAX) {
+                if (lua_tointeger(L, -1) > INT32_MAX) {
                     return NULL;
                 }
-                mbr = chno_int32_new((int32_t)lua_tonumber(L, -1));
+                mbr = chno_int32_new((int32_t)lua_tointeger(L, -1));
                 break;
             case LUA_TSTRING:
                 mbr = chno_string_new(lua_tostring(L, -1));
@@ -80,7 +80,7 @@ chno_from_lua(lua_State * L) {
         encap = true;
 
         lua_newtable(L);
-        lua_pushnumber(L, 1);
+        lua_pushinteger(L, 1);
         lua_pushvalue(L, -3);
         lua_remove(L, -4);
         lua_settable(L, -3);
@@ -128,13 +128,15 @@ chno_lua_push_node(lua_State * L, chno_t * val) {
     int       err = 0;
 
     switch (chno_type(val)) {
+	case M_TYPE_INT64:
+	case M_TYPE_UINT64:
         case M_TYPE_INT32:
         case M_TYPE_UINT32:
         case M_TYPE_UINT16:
         case M_TYPE_INT16:
         case M_TYPE_UINT8:
         case M_TYPE_INT8:
-            lua_pushnumber(L, chno_uint32(val, &err, NULL));
+            lua_pushnumber(L, chno_int32(val, &err, NULL));
             return 0;
         case M_TYPE_STRING:
             lua_pushstring(L, chno_string(val, &err, NULL));
