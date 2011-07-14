@@ -6,6 +6,7 @@
 #include <event.h>
 #include <zt.h>
 
+#include "morphine/util.h"
 #include "morphine/base.h"
 #include "private.h"
 
@@ -13,7 +14,7 @@ CHNO_M_GENERATE;
 
 chno_t *
 chno_new(chno_type_t type) {
-    chno_t * mbr = zt_calloc(chno_t, 1);
+    chno_t * mbr = calloc(sizeof(chno_t), 1);
 
     mbr->type = type;
 
@@ -37,10 +38,10 @@ _hash(const char * key) {
 
 static struct chno_tbl *
 chno_tbl_new(void) {
-    struct chno_tbl * tbl = zt_calloc(struct chno_tbl, 1);
+    struct chno_tbl * tbl = calloc(sizeof(struct chno_tbl), 1);
 
     tbl->buckets = 16;
-    tbl->nodes   = zt_calloc(struct chno_tbln *, 16);
+    tbl->nodes   = calloc(sizeof(struct chno_tbln *), 16);
     return tbl;
 }
 
@@ -158,7 +159,7 @@ chno_tbl_del(struct chno_tbl * tbl, const char * key) {
 static int
 chno_tbl_add(struct chno_tbl * tbl, const char * key, void * val) {
     struct chno_tbln * f;
-    struct chno_tbln * n = zt_calloc(struct chno_tbln, 1);
+    struct chno_tbln * n = calloc(sizeof(struct chno_tbln), 1);
     unsigned int       ki;
 
     if (key == NULL || tbl == NULL) {
@@ -166,7 +167,7 @@ chno_tbl_add(struct chno_tbl * tbl, const char * key, void * val) {
     }
 
     ki     = _hash(key);
-    n->key = zt_strdup(key);
+    n->key = strdup(key);
     n->val = val;
 
     if ((f = tbl->nodes[ki]) == NULL) {
@@ -190,13 +191,13 @@ chno_raw_new(void * data, size_t len) {
         return NULL;
     }
 
-    if (!(M_RAW(mbr) = zt_calloc(chno_raw_t, sizeof(char)))) {
+    if (!(M_RAW(mbr) = calloc(sizeof(chno_raw_t), 1))) {
         chno_free(mbr);
         return NULL;
     }
 
     if (data != NULL && len > 0) {
-        M_RAW_DATA(mbr) = zt_calloc(char, len);
+        M_RAW_DATA(mbr) = calloc(len, 1);
         M_RAW_LEN(mbr)  = len;
 
         memcpy(M_RAW_DATA(mbr), data, len);
@@ -239,7 +240,7 @@ chno_map_new(void) {
 
 chno_t *
 chno_string_new(const char * str) {
-    chno_t * mbr = NULL;
+    chno_t * mbr;
 
     if (str == NULL) {
         return NULL;
@@ -249,14 +250,14 @@ chno_string_new(const char * str) {
         return NULL;
     }
 
-    M_STR(mbr) = zt_strdup(str);
+    M_STR(mbr) = strdup(str);
     return mbr;
 }
 
 int
 chno_array_add(chno_t * dst, chno_t * src) {
-    chno_array_t * dst_arr = NULL;
-    int            err     = 0;
+    chno_array_t * dst_arr;
+    int            err = 0;
 
     if (dst == NULL || src == NULL) {
         return -1;
@@ -360,7 +361,7 @@ chno_map_add(chno_t * dst, chno_t * src, const char * k) {
 #ifndef CHNO_M_USE_ZT_TABLE
             return chno_tbl_add(dst_map, k, n);
 #else
-            return zt_table_set(dst_map, zt_strdup(k), n);
+            return zt_table_set(dst_map, strdup(k), n);
 #endif
         }
 
@@ -371,7 +372,7 @@ chno_map_add(chno_t * dst, chno_t * src, const char * k) {
 #ifndef CHNO_M_USE_ZT_TABLE
     return chno_tbl_add(dst_map, k, src);
 #else
-    return zt_table_set(dst_map, zt_strdup(k), src);
+    return zt_table_set(dst_map, strdup(k), src);
 #endif
 } /* chno_map_add */
 
@@ -391,8 +392,7 @@ chno_add(chno_t * dst, chno_t * src, const char * k) {
         case M_TYPE_ARRAY:
             return chno_array_add(dst, src);
         default:
-            fprintf(stderr, "Can't add a mbr to something that isn't iter\n");
-            return -1;
+            break;
     }
 
     return -1;
@@ -401,10 +401,10 @@ chno_add(chno_t * dst, chno_t * src, const char * k) {
 uint32_t
 chno_len(chno_t * m) {
     int            err = 0;
-    char         * str = NULL;
-    chno_array_t * arr = NULL;
-    chno_map_t   * map = NULL;
-    chno_raw_t   * raw = NULL;
+    char         * str;
+    chno_array_t * arr;
+    chno_map_t   * map;
+    chno_raw_t   * raw;
 
     if (m == NULL) {
         return 0;
@@ -457,45 +457,55 @@ _map_iter(const char * key, void * val, void * arg) {
 int
 chno_for_each(chno_t * m, chno_iter_cb cb, void * arg) {
     int            err = 0;
-    chno_array_t * arr = NULL;
-    chno_map_t   * map = NULL;
+    chno_array_t * arr;
+    chno_map_t   * map;
 
     if (m == NULL) {
         return -1;
     }
 
-    if ((map = chno_map(m, &err, NULL)) != NULL) {
-        void * cb_args[] = { cb, arg };
-
-#ifndef CHNO_M_USE_ZT_TABLE
-        return chno_tbl_for_each(map, _map_iter, cb_args);
-#else
-        return zt_table_for_each(map, _map_iter, cb_args);
-#endif
-    }
-
-    if ((arr = chno_array(m, &err, NULL)) != NULL) {
-        uint32_t len = 0;
-        uint32_t i   = 0;
-
-        len = chno_len(m);
-
-        for (i = 0; i < len; i++) {
-            int res;
-
-            if ((res = cb(NULL, chno_array_get(m, i), arg))) {
-                return res;
+    switch (chno_type(m)) {
+        case M_TYPE_MAP:
+            if (!(map = chno_map(m, &err, NULL))) {
+                return -1;
             }
-        }
 
-        return 0;
-    }
+            {
+                void * cb_args[] = { cb, arg };
+#ifndef CHNO_M_USE_ZT_TABLE
+                return chno_tbl_for_each(map, _map_iter, cb_args);
+#else
+                return zt_table_for_each(map, _map_iter, cb_args);
+#endif
+            }
+            break;
+        case M_TYPE_ARRAY:
+            if (!(arr = chno_array(m, &err, NULL))) {
+                return -1;
+            }
+            {
+                uint32_t len;
+                uint32_t i;
 
-    return -1;
-} /* chno_for_each */
+                len = chno_len(m);
+
+                for (i = 0; i < len; i++) {
+                    int res;
+                    if ((res = cb(NULL, chno_array_get(m, i), arg))) {
+                        return res;
+                    }
+                }
+            }
+            break;
+        default:
+            return -1;
+    } /* switch */
+
+    return 0;
+}     /* chno_for_each */
 
 int
-chno_pack(chno_t * mbr, struct evbuffer * buf, char m_err[]) {
+chno_pack(chno_t * mbr, chno_buffer_t * buf, char m_err[]) {
     if (mbr == NULL) {
         return -1;
     }
@@ -535,28 +545,28 @@ chno_pack(chno_t * mbr, struct evbuffer * buf, char m_err[]) {
 
 int
 chno_pack_buffer(chno_t * mbr, void ** obuf, size_t * olen, char m_err[]) {
-    struct evbuffer * tmp = NULL;
-    void            * buf = NULL;
-    size_t            len = 0;
+    chno_buffer_t * tmp = NULL;
+    void          * buf = NULL;
+    size_t          len = 0;
 
     if (mbr == NULL) {
         M_MKERR(m_err, "mbr == NULL");
         return -1;
     }
 
-    if (!(tmp = evbuffer_new())) {
+    if (!(tmp = chno_buffer_new())) {
         return -1;
     }
 
     *obuf = NULL;
 
     if (chno_pack(mbr, tmp, m_err) < 0) {
-        evbuffer_free(tmp);
+        chno_buffer_free(tmp);
         return -1;
     }
 
-    if ((len = evbuffer_get_length(tmp)) == 0) {
-        evbuffer_free(tmp);
+    if ((len = chno_buffer_length(tmp)) == 0) {
+        chno_buffer_free(tmp);
         M_MKERR(m_err, "len = 0");
         return -1;
     }
@@ -564,13 +574,13 @@ chno_pack_buffer(chno_t * mbr, void ** obuf, size_t * olen, char m_err[]) {
 
     if (!(buf = zt_malloc(char, len))) {
         M_MKERR(m_err, "malloc()");
-        evbuffer_free(tmp);
+        chno_buffer_free(tmp);
         return -1;
     }
 
-    if (evbuffer_remove(tmp, buf, len) < 0) {
-        M_MKERR(m_err, "evbuffer_remove");
-        evbuffer_free(tmp);
+    if (chno_buffer_remove(tmp, buf, len) < 0) {
+        M_MKERR(m_err, "chno_buffer_remove");
+        chno_buffer_free(tmp);
         *obuf = NULL;
         return -1;
     }
@@ -578,32 +588,32 @@ chno_pack_buffer(chno_t * mbr, void ** obuf, size_t * olen, char m_err[]) {
     *obuf = buf;
     *olen = len;
 
-    evbuffer_free(tmp);
+    chno_buffer_free(tmp);
     return 0;
 } /* chno_pack_buffer */
 
 int
 chno_pack_buffer_compress(chno_t * mbr, void ** obuf, size_t * olen, char m_err[]) {
-    struct evbuffer * tmp = NULL;
-    void            * buf = NULL;
-    size_t            len = 0;
+    chno_buffer_t * tmp = NULL;
+    void          * buf = NULL;
+    size_t          len = 0;
 
     if (mbr == NULL) {
         M_MKERR(m_err, "mbr == NULL");
         return -1;
     }
 
-    if (!(tmp = evbuffer_new())) {
+    if (!(tmp = chno_buffer_new())) {
         return -1;
     }
 
     if (chno_pack_compress(mbr, tmp, m_err) < 0) {
-        evbuffer_free(tmp);
+        chno_buffer_free(tmp);
         return -1;
     }
 
-    if ((len = evbuffer_get_length(tmp)) == 0) {
-        evbuffer_free(tmp);
+    if ((len = chno_buffer_length(tmp)) == 0) {
+        chno_buffer_free(tmp);
         M_MKERR(m_err, "len = 0");
         return -1;
     }
@@ -611,28 +621,28 @@ chno_pack_buffer_compress(chno_t * mbr, void ** obuf, size_t * olen, char m_err[
 
     if (!(buf = zt_malloc(char, len))) {
         M_MKERR(m_err, "malloc()");
-        evbuffer_free(tmp);
+        chno_buffer_free(tmp);
         return -1;
     }
 
-    if (evbuffer_remove(tmp, buf, len) < 0) {
-        M_MKERR(m_err, "evbuffer_remove");
-        evbuffer_free(tmp);
+    if (chno_buffer_remove(tmp, buf, len) < 0) {
+        M_MKERR(m_err, "chno_buffer_remove");
+        chno_buffer_free(tmp);
         return -1;
     }
 
     *obuf = buf;
     *olen = len;
 
-    evbuffer_free(tmp);
+    chno_buffer_free(tmp);
     return 0;
 } /* chno_pack_buffer_compress */
 
 int
-chno_pack_compress(chno_t * mbr, struct evbuffer * buf, char m_err[]) {
-    unsigned char     buffer[2048] = { 0 };
-    struct evbuffer * packed       = NULL;
-    z_stream          stream;
+chno_pack_compress(chno_t * mbr, chno_buffer_t * buf, char m_err[]) {
+    unsigned char   buffer[2048] = { 0 };
+    chno_buffer_t * packed       = NULL;
+    z_stream        stream;
 
     if (mbr == NULL || buf == NULL) {
         M_MKERR(m_err, "args");
@@ -646,20 +656,20 @@ chno_pack_compress(chno_t * mbr, struct evbuffer * buf, char m_err[]) {
         return -1;
     }
 
-    if (!(packed = evbuffer_new())) {
-        M_MKERR(m_err, "evbuffer_new()");
+    if (!(packed = chno_buffer_new())) {
+        M_MKERR(m_err, "chno_buffer_new()");
         return -1;
     }
 
     if (chno_pack(mbr, packed, m_err) < 0) {
-        evbuffer_free(packed);
+        chno_buffer_free(packed);
         return -1;
     }
 
     deflateReset(&stream);
 
-    stream.next_in  = evbuffer_pullup(packed, -1);
-    stream.avail_in = (unsigned int)evbuffer_get_length(packed);
+    stream.next_in  = chno_buffer_get(packed);
+    stream.avail_in = (unsigned int)chno_buffer_length(packed);
 
     do {
         stream.next_out  = buffer;
@@ -668,29 +678,29 @@ chno_pack_compress(chno_t * mbr, struct evbuffer * buf, char m_err[]) {
         if (deflate(&stream, Z_FULL_FLUSH) != Z_OK) {
             M_MKERR(m_err, "deflate()");
             deflateEnd(&stream);
-            evbuffer_free(packed);
+            chno_buffer_free(packed);
             return -1;
         }
 
-        evbuffer_add(buf, buffer, sizeof(buffer) - stream.avail_out);
+        chno_buffer_add(buf, buffer, sizeof(buffer) - stream.avail_out);
     } while (stream.avail_out == 0);
 
     deflateEnd(&stream);
-    evbuffer_free(packed);
+    chno_buffer_free(packed);
     return 0;
 } /* chno_pack_compress */
 
 static int
 _array_pack_iter(const char * k UNUSED, chno_t * m, void * arg) {
-    void           ** args  = (void**)arg;
-    char            * m_err = (char*)args[1];
-    struct evbuffer * buf   = (struct evbuffer*)args[0];
+    void         ** args  = (void**)arg;
+    char          * m_err = (char*)args[1];
+    chno_buffer_t * buf   = (chno_buffer_t*)args[0];
 
     return chno_pack(m, buf, m_err);
 }
 
 int
-chno_array_pack(chno_t * mbr, struct evbuffer * buf, char m_err[]) {
+chno_array_pack(chno_t * mbr, chno_buffer_t * buf, char m_err[]) {
     chno_packed_hdr_t hdr    = M_TYPE_ARRAY;
     const void      * args[] = { buf, m_err };
 
@@ -699,29 +709,29 @@ chno_array_pack(chno_t * mbr, struct evbuffer * buf, char m_err[]) {
         return -1;
     }
 
-    evbuffer_add(buf, &hdr, sizeof(chno_packed_hdr_t));
-    evbuffer_add(buf, &mbr->count, sizeof(uint32_t));
+    chno_buffer_add(buf, &hdr, sizeof(hdr));
+    chno_buffer_add(buf, &mbr->count, sizeof(uint32_t));
 
     return chno_for_each(mbr, _array_pack_iter, (void*)args);
 }
 
 static int
 _map_pack_iter(const char * k, chno_t * m, void * arg) {
-    void           ** args  = (void**)arg;
-    struct evbuffer * buf   = (struct evbuffer*)args[0];
-    char            * m_err = (char*)args[1];
+    void         ** args  = (void**)arg;
+    chno_buffer_t * buf   = (chno_buffer_t*)args[0];
+    char          * m_err = (char*)args[1];
 
     if (k == NULL) {
         return -1;
     }
 
-    evbuffer_add(buf, k, strlen(k) + 1);
+    chno_buffer_add(buf, (void *)k, strlen(k) + 1);
 
     return chno_pack(m, buf, m_err);
 }
 
 int
-chno_map_pack(chno_t * mbr, struct evbuffer * buf, char m_err[]) {
+chno_map_pack(chno_t * mbr, chno_buffer_t * buf, char m_err[]) {
     chno_packed_hdr_t hdr    = M_TYPE_MAP;
     const void      * args[] = { buf, m_err };
 
@@ -730,16 +740,16 @@ chno_map_pack(chno_t * mbr, struct evbuffer * buf, char m_err[]) {
         return -1;
     }
 
-    evbuffer_add(buf, &hdr, sizeof(chno_packed_hdr_t));
-    evbuffer_add(buf, &mbr->count, sizeof(uint32_t));
+    chno_buffer_add(buf, &hdr, sizeof(chno_packed_hdr_t));
+    chno_buffer_add(buf, &mbr->count, sizeof(uint32_t));
 
     return chno_for_each(mbr, _map_pack_iter, (void*)args);
 }
 
 int
-chno_string_pack(chno_t * mbr, struct evbuffer * buf, char m_err[]) {
+chno_string_pack(chno_t * mbr, chno_buffer_t * buf, char m_err[]) {
     chno_packed_hdr_t hdr = M_TYPE_STRING;
-    char            * str = NULL;
+    char            * str;
     int               err = 0;
 
     if (buf == NULL) {
@@ -750,14 +760,13 @@ chno_string_pack(chno_t * mbr, struct evbuffer * buf, char m_err[]) {
         return -1;
     }
 
-    evbuffer_add(buf, &hdr, sizeof(chno_packed_hdr_t));
-    evbuffer_add(buf, str, chno_len(mbr) + 1);
-
+    chno_buffer_add(buf, &hdr, sizeof(hdr));
+    chno_buffer_add(buf, str, strlen(str) + 1);
     return 0;
 }
 
 int
-chno_raw_pack(chno_t * mbr, struct evbuffer * buf, char m_err[]) {
+chno_raw_pack(chno_t * mbr, chno_buffer_t * buf, char m_err[]) {
     size_t            len     = 0;
     void            * data    = NULL;
     chno_packed_hdr_t hdr     = M_TYPE_RAW;
@@ -795,15 +804,15 @@ chno_raw_pack(chno_t * mbr, struct evbuffer * buf, char m_err[]) {
         return -1;
     }
 
-    evbuffer_add(buf, &hdr, sizeof(chno_packed_hdr_t));
-    evbuffer_add(buf, &word_sz, sizeof(uint8_t));
-    evbuffer_add(buf, &len, (word_sz >> 3));
-    evbuffer_add(buf, data, len);
+    chno_buffer_add(buf, &hdr, sizeof(chno_packed_hdr_t));
+    chno_buffer_add(buf, &word_sz, sizeof(uint8_t));
+    chno_buffer_add(buf, &len, (word_sz >> 3));
+    chno_buffer_add(buf, data, len);
     return 0;
 }
 
 chno_t *
-chno_map_unpack(struct evbuffer * buf, char m_err[]) {
+chno_map_unpack(chno_buffer_t * buf, char m_err[]) {
     chno_t * mbr;
     uint32_t count;
     uint32_t i;
@@ -817,7 +826,7 @@ chno_map_unpack(struct evbuffer * buf, char m_err[]) {
         return NULL;
     }
 
-    evbuffer_remove(buf, &count, sizeof(uint32_t));
+    chno_buffer_remove(buf, &count, sizeof(uint32_t));
 
     for (i = 0; i < count; i++) {
         const char * key;
@@ -828,12 +837,12 @@ chno_map_unpack(struct evbuffer * buf, char m_err[]) {
             return NULL;
         }
 
-        if (!(key = zt_strdup((char*)evbuffer_pullup(buf, -1)))) {
+        if (!(key = strdup((char*)chno_buffer_get(buf)))) {
             chno_free(mbr);
             return NULL;
         }
 
-        evbuffer_drain(buf, strlen(key) + 1);
+        chno_buffer_drain(buf, strlen(key) + 1);
 
         if (key == NULL) {
             M_MKERR(m_err, "key err");
@@ -852,7 +861,7 @@ chno_map_unpack(struct evbuffer * buf, char m_err[]) {
 }     /* chno_map_unpack */
 
 chno_t *
-chno_array_unpack(struct evbuffer * buf, char m_err[]) {
+chno_array_unpack(chno_buffer_t * buf, char m_err[]) {
     chno_t * mbr;
     uint32_t count;
     uint32_t i;
@@ -866,7 +875,7 @@ chno_array_unpack(struct evbuffer * buf, char m_err[]) {
         return NULL;
     }
 
-    evbuffer_remove(buf, &count, sizeof(int32_t));
+    chno_buffer_remove(buf, &count, sizeof(int32_t));
 
     for (i = 0; i < count; i++) {
         chno_t * m;
@@ -882,7 +891,7 @@ chno_array_unpack(struct evbuffer * buf, char m_err[]) {
 }
 
 chno_t *
-chno_raw_unpack(struct evbuffer * buf, char m_err[]) {
+chno_raw_unpack(chno_buffer_t * buf, char m_err[]) {
     void   * data    = NULL;
     size_t   len     = 0;
     uint8_t  word_sz = 0;
@@ -898,7 +907,7 @@ chno_raw_unpack(struct evbuffer * buf, char m_err[]) {
         return NULL;
     }
 
-    evbuffer_remove(buf, &word_sz, sizeof(uint8_t));
+    chno_buffer_remove(buf, &word_sz, sizeof(uint8_t));
 
     switch (word_sz) {
         case 8:
@@ -907,7 +916,7 @@ chno_raw_unpack(struct evbuffer * buf, char m_err[]) {
                 return NULL;
             }
 
-            evbuffer_remove(buf, &len, sizeof(uint8_t));
+            chno_buffer_remove(buf, &len, sizeof(uint8_t));
             break;
         case 16:
             if (M_BUFCHK(buf, sizeof(uint16_t))) {
@@ -915,7 +924,7 @@ chno_raw_unpack(struct evbuffer * buf, char m_err[]) {
                 return NULL;
             }
 
-            evbuffer_remove(buf, &len, sizeof(uint16_t));
+            chno_buffer_remove(buf, &len, sizeof(uint16_t));
             break;
         case 32:
             if (M_BUFCHK(buf, sizeof(uint32_t))) {
@@ -923,7 +932,7 @@ chno_raw_unpack(struct evbuffer * buf, char m_err[]) {
                 return NULL;
             }
 
-            evbuffer_remove(buf, &len, sizeof(uint32_t));
+            chno_buffer_remove(buf, &len, sizeof(uint32_t));
             break;
         case 64:
             if (M_BUFCHK(buf, sizeof(uint64_t))) {
@@ -931,7 +940,7 @@ chno_raw_unpack(struct evbuffer * buf, char m_err[]) {
                 return NULL;
             }
 
-            sz_64 = *((uint64_t *)evbuffer_pullup(buf, (ev_ssize_t)sizeof(uint64_t)));
+            sz_64 = *((uint64_t *)chno_buffer_get(buf));
 
             /* do this check to make sure that the data wouldn't overflow a
              * size_t (think 64b > 32b). If an overflow is detected it will
@@ -944,7 +953,7 @@ chno_raw_unpack(struct evbuffer * buf, char m_err[]) {
                 return NULL;
             }
 
-            evbuffer_remove(buf, &len, sizeof(uint64_t));
+            chno_buffer_remove(buf, &len, sizeof(uint64_t));
             break;
         default:
             M_MKERR(m_err, "Invalid word size\n");
@@ -956,11 +965,11 @@ chno_raw_unpack(struct evbuffer * buf, char m_err[]) {
         return NULL;
     }
 
-    if (!(data = zt_calloc(char, len))) {
+    if (!(data = calloc(len, 1))) {
         return NULL;
     }
 
-    evbuffer_remove(buf, data, len);
+    chno_buffer_remove(buf, data, len);
 
     if (!(m = chno_raw_new(data, len))) {
         zt_free(data);
@@ -973,9 +982,12 @@ chno_raw_unpack(struct evbuffer * buf, char m_err[]) {
 } /* chno_raw_unpack */
 
 chno_t *
-chno_string_unpack(struct evbuffer * buf, char m_err[]) {
-    const char * str = NULL;
-    chno_t     * m   = NULL;
+chno_string_unpack(chno_buffer_t * buf, char m_err[]) {
+    const char * str;
+    void       * data;
+    void       * zptr;
+    size_t       slen;
+    chno_t     * m;
 
     if (buf == NULL) {
         return NULL;
@@ -986,31 +998,31 @@ chno_string_unpack(struct evbuffer * buf, char m_err[]) {
         return NULL;
     }
 
-    str = zt_strdup((char*)evbuffer_pullup(buf, -1));
+    data = chno_buffer_get(buf);
 
-    if (str == NULL) {
+    if (!(zptr = memchr(data, '\0', chno_buffer_length(buf)))) {
         M_MKERR(m_err, "str err");
         return NULL;
     }
 
-    evbuffer_drain(buf, strlen(str) + 1);
+    slen = (size_t)(zptr - data) + 1;
+    str  = alloca(slen);
+
+    chno_buffer_remove(buf, (void *)str, slen);
 
     if (!(m = chno_string_new(str))) {
         chno_free(m);
-        zt_free(str);
         return NULL;
     }
-
-    zt_free(str);
 
     return m;
 }
 
 chno_t *
-chno_unpack(struct evbuffer * buf, char m_err[]) {
+chno_unpack(chno_buffer_t * buf, char m_err[]) {
     chno_packed_hdr_t hdr = M_TYPE_START;
 
-    evbuffer_remove(buf, &hdr, sizeof(chno_packed_hdr_t));
+    chno_buffer_remove(buf, &hdr, sizeof(chno_packed_hdr_t));
 
     switch (hdr) {
         case M_TYPE_MAP:
@@ -1044,50 +1056,50 @@ chno_unpack(struct evbuffer * buf, char m_err[]) {
 
 chno_t *
 chno_unpack_buffer(void * data, size_t len, char m_err[]) {
-    struct evbuffer * tmp   = NULL;
-    chno_t          * ret_m = NULL;
+    chno_buffer_t * tmp   = NULL;
+    chno_t        * ret_m = NULL;
 
     if (data == NULL || len == 0) {
         M_MKERR(m_err, "data == NULL || len == 0");
         return NULL;
     }
 
-    tmp = evbuffer_new();
-    evbuffer_add(tmp, data, len);
+    tmp = chno_buffer_new();
+    chno_buffer_add(tmp, data, len);
 
     ret_m = chno_unpack(tmp, m_err);
-    evbuffer_free(tmp);
+    chno_buffer_free(tmp);
     return ret_m;
 }
 
 chno_t *
 chno_unpack_buffer_compressed(void * data, size_t len, char m_err[]) {
-    struct evbuffer * tmp   = NULL;
-    chno_t          * ret_m = NULL;
+    chno_buffer_t * tmp   = NULL;
+    chno_t        * ret_m = NULL;
 
     if (data == NULL || len == 0) {
         M_MKERR(m_err, "data == NULL || len == 0");
         return NULL;
     }
 
-    if (!(tmp = evbuffer_new())) {
+    if (!(tmp = chno_buffer_new())) {
         return NULL;
     }
 
-    evbuffer_add(tmp, data, len);
+    chno_buffer_add(tmp, data, len);
 
     ret_m = chno_unpack_compressed(tmp, m_err);
-    evbuffer_free(tmp);
+    chno_buffer_free(tmp);
     return ret_m;
 }
 
 chno_t *
-chno_unpack_compressed(struct evbuffer * buf, char m_err[]) {
-    z_stream          stream;
-    struct evbuffer * tmp          = NULL;
-    chno_t          * unpacked_m   = NULL;
-    bool              done         = false;
-    unsigned char     buffer[2048] = { 0 };
+chno_unpack_compressed(chno_buffer_t * buf, char m_err[]) {
+    z_stream        stream;
+    chno_buffer_t * tmp          = NULL;
+    chno_t        * unpacked_m   = NULL;
+    bool            done         = false;
+    unsigned char   buffer[2048] = { 0 };
 
     if (buf == NULL) {
         M_MKERR(m_err, "buf == NULL");
@@ -1101,15 +1113,15 @@ chno_unpack_compressed(struct evbuffer * buf, char m_err[]) {
         return NULL;
     }
 
-    if (!(tmp = evbuffer_new())) {
-        M_MKERR(m_err, "evbuffer_new()");
+    if (!(tmp = chno_buffer_new())) {
+        M_MKERR(m_err, "chno_buffer_new()");
         return NULL;
     }
 
     inflateReset(&stream);
 
-    stream.next_in  = evbuffer_pullup(buf, -1);
-    stream.avail_in = (unsigned int)evbuffer_get_length(buf);
+    stream.next_in  = chno_buffer_get(buf);
+    stream.avail_in = (unsigned int)chno_buffer_length(buf);
 
     do {
         stream.next_out  = buffer;
@@ -1117,7 +1129,7 @@ chno_unpack_compressed(struct evbuffer * buf, char m_err[]) {
 
         switch (inflate(&stream, Z_FULL_FLUSH)) {
             case Z_OK:
-                evbuffer_add(tmp, buffer, sizeof(buffer) - stream.avail_out);
+                chno_buffer_add(tmp, buffer, sizeof(buffer) - stream.avail_out);
                 break;
             case Z_BUF_ERROR:
                 done = true;
@@ -1125,14 +1137,14 @@ chno_unpack_compressed(struct evbuffer * buf, char m_err[]) {
             default:
                 M_MKERR(m_err, "inflate()");
                 inflateEnd(&stream);
-                evbuffer_free(tmp);
+                chno_buffer_free(tmp);
                 return NULL;
         }
     } while (done == false);
 
     unpacked_m = chno_unpack(tmp, m_err);
-    evbuffer_drain(buf, stream.total_in);
-    evbuffer_free(tmp);
+    chno_buffer_drain(buf, stream.total_in);
+    chno_buffer_free(tmp);
     inflateEnd(&stream);
 
     return unpacked_m;
@@ -1140,11 +1152,11 @@ chno_unpack_compressed(struct evbuffer * buf, char m_err[]) {
 
 chno_t *
 chno_from_raw(chno_t * raw) {
-    chno_t          * m      = NULL;
-    chno_raw_t      * rawp   = NULL;
-    struct evbuffer * packed = NULL;
-    int               err    = 0;
-    char              m_err[M_ERROR_SZ];
+    chno_t        * m      = NULL;
+    chno_raw_t    * rawp   = NULL;
+    chno_buffer_t * packed = NULL;
+    int             err    = 0;
+    char            m_err[M_ERROR_SZ];
 
     if (raw == NULL) {
         return NULL;
@@ -1154,15 +1166,15 @@ chno_from_raw(chno_t * raw) {
         return NULL;
     }
 
-    if (!(packed = evbuffer_new())) {
+    if (!(packed = chno_buffer_new())) {
         return NULL;
     }
 
-    evbuffer_add(packed, rawp->data, rawp->len);
+    chno_buffer_add(packed, rawp->data, rawp->len);
 
     m = chno_unpack(packed, m_err);
 
-    evbuffer_free(packed);
+    chno_buffer_free(packed);
     return m;
 }
 
@@ -1171,25 +1183,25 @@ chno_copy(chno_t * in_m) {
     /* FIXME HACK: this function "copies" a chno_t into a new one, but
      * this packs it, then unpacks it. Should just create a real copy.
      */
-    chno_t          * out_m = NULL;
-    struct evbuffer * packed;
-    char              m_err[M_ERROR_SZ];
+    chno_t        * out_m = NULL;
+    chno_buffer_t * packed;
+    char            m_err[M_ERROR_SZ];
 
     if (in_m == NULL) {
         return NULL;
     }
 
-    if (!(packed = evbuffer_new())) {
+    if (!(packed = chno_buffer_new())) {
         return NULL;
     }
 
     if (chno_pack(in_m, packed, m_err) < 0) {
-        evbuffer_free(packed);
+        chno_buffer_free(packed);
         return NULL;
     }
 
     out_m = chno_unpack(packed, m_err);
-    evbuffer_free(packed);
+    chno_buffer_free(packed);
 
     return out_m;
 }
@@ -1256,16 +1268,19 @@ chno_array_del(chno_t * m, uint32_t idx) {
     return new_arr;
 }
 
-bool
+#if 0
+inline bool
 chno_valid_type(chno_t * mbr, chno_type_t type) {
-    if (mbr == NULL || mbr->type != type) {
+    if (mbr->type != type) {
         return false;
     }
 
     return true;
 }
 
-chno_type_t
+#endif
+
+inline chno_type_t
 chno_type(chno_t * m) {
     if (m == NULL) {
         return 0;

@@ -21,6 +21,7 @@ find_package(LibZ)
 
 set (MORPHINE_SOURCES
 	morphine.c
+  util/buf.c
   morph/json.c
   morph/lua.c
   morph/stdout.c
@@ -29,6 +30,7 @@ set (MORPHINE_SOURCES
 set (MORPHINE_HEADERS
 	morphine.h
 	include/base.h
+  include/util/buf.h
 	include/morph.h
 	include/morph/json.h
 	include/morph/lua.h
@@ -58,6 +60,15 @@ set(MORPHINE_EXTERNAL_LIBS
 add_library(libmorphine STATIC ${MORPHINE_SOURCES})
 set_target_properties(libmorphine PROPERTIES OUTPUT_NAME "morphine")
 target_link_libraries(libmorphine ${MORPHINE_EXTERNAL_LIBS})
+install (TARGETS libmorphine DESTINATION lib)
+install (FILES morphine.h DESTINATION include)
+install (FILES include/morphine/base.h DESTINATION include/morphine)
+install (FILES include/morphine/morph.h DESTINATION include/morphine)
+install (FILES include/morphine/morph/json.h DESTINATION include/morphine/morph)
+install (FILES include/morphine/morph/lua.h DESTINATION include/morphine/morph)
+install (FILES include/morphine/morph/stdout.h DESTINATION include/morphine/morph)
+install (FILES include/morphine/util.h DESTINATION include/morphine)
+install (FILES include/morphine/util/buf.h DESTINATION include/morphine/util)
 
 
 add_executable(chno_example ${CMAKE_CURRENT_SOURCE_DIR}/examples/chno_example.c)

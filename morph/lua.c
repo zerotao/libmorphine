@@ -10,6 +10,7 @@
 
 #include <zt.h>
 
+#include "morphine/util.h"
 #include "morphine/base.h"
 #include "morphine/morph/lua.h"
 

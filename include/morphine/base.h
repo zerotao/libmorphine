@@ -104,12 +104,12 @@ typedef int (*chno_iter_cb)(const char * key, chno_t * val, void * args);
 } while (0)
 
 #define M_BUFERR(buf)      M_MKERR(buf, "buf too small")
-#define M_BUFCHK(buf, len) (evbuffer_get_length(buf) < len)
+#define M_BUFCHK(buf, len) (chno_buffer_length(buf) < len)
 
 #define CHNO_M_PROTOTYPE_INTTYPE_FUN(vname, type)                                        \
     chno_t * chno_ ## vname ## _new(type d);                                             \
-    int      chno_ ## vname ## _pack(chno_t * mbr, struct evbuffer * buf, char m_err[]); \
-    chno_t * chno_ ## vname ## _unpack(struct evbuffer * buf, char m_err[]);
+    int      chno_ ## vname ## _pack(chno_t * mbr, chno_buffer_t * buf, char m_err[]); \
+    chno_t * chno_ ## vname ## _unpack(chno_buffer_t * buf, char m_err[]);
 
 #define CHNO_PROTOTYPE_VAL_FUN(_vname, _type) \
     _type chno_ ## _vname(chno_t *, int * err, char m_err[]);
@@ -173,27 +173,28 @@ int         chno_array_add(chno_t * dst, chno_t * src);
 int         chno_add(chno_t * dst, chno_t * src, const char * key);
 uint32_t    chno_len(chno_t * m);
 
-chno_t    * chno_unpack(struct evbuffer *, char m_err[]);
-chno_t    * chno_unpack_compressed(struct evbuffer *, char m_err[]);
+chno_t    * chno_unpack(chno_buffer_t *, char m_err[]);
+chno_t    * chno_unpack_compressed(chno_buffer_t *, char m_err[]);
 chno_t    * chno_unpack_buffer(void * data, size_t len, char m_err[]);
 chno_t    * chno_unpack_buffer_compressed(void * data, size_t len, char m_err[]);
-chno_t    * chno_string_unpack(struct evbuffer * buf, char m_err[]);
-chno_t    * chno_raw_unpack(struct evbuffer * buf, char m_err[]);
-chno_t    * chno_array_unpack(struct evbuffer *, char m_err[]);
-chno_t    * chno_map_unpack(struct evbuffer *, char m_err[]);
+chno_t    * chno_string_unpack(chno_buffer_t * buf, char m_err[]);
+chno_t    * chno_raw_unpack(chno_buffer_t * buf, char m_err[]);
+chno_t    * chno_array_unpack(chno_buffer_t *, char m_err[]);
+chno_t    * chno_map_unpack(chno_buffer_t *, char m_err[]);
 
-int         chno_pack(chno_t *, struct evbuffer *, char m_err[]);
+int         chno_pack(chno_t *, chno_buffer_t *, char m_err[]);
 int         chno_pack_buffer(chno_t *, void **, size_t *, char m_err[]);
 int         chno_pack_buffer_compress(chno_t *, void **, size_t *, char m_err[]);
-int         chno_pack_compress(chno_t *, struct evbuffer *, char m_err[]);
-int         chno_map_pack(chno_t *, struct evbuffer *, char m_err[]);
-int         chno_raw_pack(chno_t * mbr, struct evbuffer * buf, char m_err[]);
-int         chno_string_pack(chno_t * mbr, struct evbuffer * buf, char m_err[]);
-int         chno_array_pack(chno_t *, struct evbuffer *, char m_err[]);
+int         chno_pack_compress(chno_t *, chno_buffer_t *, char m_err[]);
+int         chno_map_pack(chno_t *, chno_buffer_t *, char m_err[]);
+int         chno_raw_pack(chno_t * mbr, chno_buffer_t * buf, char m_err[]);
+int         chno_string_pack(chno_t * mbr, chno_buffer_t * buf, char m_err[]);
+int         chno_array_pack(chno_t *, chno_buffer_t *, char m_err[]);
 int         chno_for_each(chno_t *, chno_iter_cb cb, void *);
 
 chno_type_t chno_type(chno_t *);
-bool        chno_valid_type(chno_t *, chno_type_t);
+//bool        chno_valid_type(chno_t *, chno_type_t);
+#define chno_valid_type(mbr, _type) ((mbr->type == _type) ? true : false)
 
 int         chno_set_arg(chno_t * m, void * arg);
 void      * chno_get_arg(chno_t * m);

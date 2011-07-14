@@ -8,10 +8,10 @@
 
 static void
 pack_and_unpack(chno_t * chno) {
-    struct evbuffer * buf;
+    chno_buffer_t * buf;
     chno_t          * unpacked;
 
-    buf = evbuffer_new();
+    buf = chno_buffer_new();
 
     printf("----- Original chno structure\n");
     chno_print(chno);
@@ -20,7 +20,7 @@ pack_and_unpack(chno_t * chno) {
     chno_pack(chno, buf, NULL);
 
     printf("----- Hexdump of the packed chno structure\n");
-    chno_hexdump((char *)evbuffer_pullup(buf, -1), evbuffer_get_length(buf));
+    chno_hexdump((char *)chno_buffer_get(buf), chno_buffer_length(buf));
     printf("-----\n");
 
     unpacked = chno_unpack(buf, NULL);
@@ -30,14 +30,14 @@ pack_and_unpack(chno_t * chno) {
     printf("-----\n");
 
     chno_free(unpacked);
-    evbuffer_drain(buf, -1);
+    chno_buffer_drain(buf, chno_buffer_length(buf));
 
     printf("----- Creating a compressed and packed buffer\n");
     chno_pack_compress(chno, buf, NULL);
     printf("-----\n");
 
     printf("----- Hexdump of the compressed and packed strucutre\n");
-    chno_hexdump((char *)evbuffer_pullup(buf, -1), evbuffer_get_length(buf));
+    chno_hexdump((char *)chno_buffer_get(buf), chno_buffer_length(buf));
     printf("-----\n");
 
     unpacked = chno_unpack_compressed(buf, NULL);
@@ -47,7 +47,7 @@ pack_and_unpack(chno_t * chno) {
     printf("----- \n");
 
     chno_free(unpacked);
-    evbuffer_free(buf);
+    chno_buffer_free(buf);
 } /* pack_and_unpack */
 
 void
@@ -64,6 +64,12 @@ chno_primitives_example(void) {
     chno_t * raw    = chno_raw_new("herpderp\0", 9);
     chno_t * array  = chno_array_new();
     int      err    = 0;
+
+    chno_add(array, str, NULL);
+    chno_add(array, int8, NULL);
+    chno_add(array, int32, NULL);
+    pack_and_unpack(array);
+    return;
 
     printf("%" PRIu8 "\n", chno_uint8(uint8, &err, NULL));
     printf("%" PRId8 "\n", chno_int8(int8, &err, NULL));
@@ -144,7 +150,7 @@ chno_map_example(void) {
 int
 main(int argc, char ** argv) {
     chno_primitives_example();
-    chno_map_example();
+//    chno_map_example();
     return 0;
 }
 

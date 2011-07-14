@@ -6,6 +6,7 @@
 #include <json/json.h>
 #include <json/json_object_private.h>
 
+#include "morphine/util.h"
 #include "morphine/base.h"
 #include "morphine/morph/json.h"
 
