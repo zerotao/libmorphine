@@ -13,7 +13,6 @@ message("MinSizeRel FLAGS: ${CMAKE_C_FLAGS_MINSIZEREL}")
 message("RelWithDebInfo FLAGS: ${CMAKE_C_FLAGS_RELWITHDEBINFO}")
 
 find_package(LibZt)
-find_package(LibEvent)
 find_package(LibJSONC)
 find_package(Lua)
 #find_package(LuaLib)
@@ -41,7 +40,6 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	${LIBZT_INCLUDE_DIR}
-	${LIBEVENT_INCLUDE_DIR}
 	${LUA_INCLUDE_DIR}
   ${LUALIB_INCLUDE_DIR}
 	${LIBJSONC_INCLUDE_DIR}
@@ -50,7 +48,6 @@ include_directories(
 
 set(MORPHINE_EXTERNAL_LIBS
 	${LIBZT_LIBRARIES}
-	${LIBEVENT_LIBRARY}
 	${LUA_LIBRARIES}
   ${LUALIB_LIBRARIES}
 	${LIBJSONC_LIBRARIES}

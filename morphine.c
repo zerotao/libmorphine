@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdint.h>
 #include <errno.h>
-#include <event.h>
 #include <zt.h>
 
 #include "morphine/util.h"

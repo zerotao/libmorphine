@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <zlib.h>
 #include <sys/queue.h>
-#include <event.h>
 #include <zt.h>
 
 #ifndef __WORDSIZE

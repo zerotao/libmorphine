@@ -5,7 +5,6 @@
 #include <errno.h>
 #include <ctype.h>
 #include <alloca.h>
-#include <event.h>
 #include <zt.h>
 
 #include "morphine/util.h"

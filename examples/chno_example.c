@@ -65,12 +65,6 @@ chno_primitives_example(void) {
     chno_t * array  = chno_array_new();
     int      err    = 0;
 
-    chno_add(array, str, NULL);
-    chno_add(array, int8, NULL);
-    chno_add(array, int32, NULL);
-    pack_and_unpack(array);
-    return;
-
     printf("%" PRIu8 "\n", chno_uint8(uint8, &err, NULL));
     printf("%" PRId8 "\n", chno_int8(int8, &err, NULL));
     printf("%" PRIu16 "\n", chno_uint16(uint16, &err, NULL));
@@ -150,7 +144,7 @@ chno_map_example(void) {
 int
 main(int argc, char ** argv) {
     chno_primitives_example();
-//    chno_map_example();
+    chno_map_example();
     return 0;
 }
 
