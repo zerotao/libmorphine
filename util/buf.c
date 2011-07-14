@@ -103,6 +103,44 @@ chno_buffer_remove(chno_buffer_t * b, void * out, size_t olen) {
     return 0;
 }
 
+int
+chno_buffer_reserve(chno_buffer_t * b, size_t len) {
+    if (len > chno_buffer_unused_sz(b)) {
+        chno_buffer_expand(b, len);
+    }
+
+    return 0;
+}
+
+size_t
+chno_buffer_iovec_len(chno_iovec_t * vec, int n_vec) {
+    int    i;
+    size_t len;
+
+    len = 0;
+
+    for (i = 0; i < n_vec; i++) {
+        len += vec[i].iov_len;
+    }
+
+    return len;
+}
+
+int
+chno_buffer_iovec_add(chno_buffer_t * b, chno_iovec_t * vec, int n_vec) {
+    int    i;
+    size_t tlen;
+
+    tlen = chno_buffer_iovec_len(vec, n_vec);
+    chno_buffer_reserve(b, tlen);
+
+    for (i = 0; i < n_vec; i++) {
+        chno_buffer_add(b, vec[i].iov_data, vec[i].iov_len);
+    }
+
+    return 0;
+}
+
 void
 chno_buffer_free(chno_buffer_t * b) {
     if (b->buf) {
