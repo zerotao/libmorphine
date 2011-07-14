@@ -61,6 +61,7 @@ chno_from_jtype(json_object * jobj) {
             mbr = chno_from_jarr(jobj);
             break;
         default:
+	    mbr = NULL;
             break;
     }
     return mbr;

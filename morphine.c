@@ -20,8 +20,6 @@ chno_new(chno_type_t type) {
     return mbr;
 }
 
-#ifndef CHNO_M_USE_ZT_TABLE
-
 typedef int (*chno_tbl_iter_cb)(const char *, void *, void *);
 
 static unsigned int
@@ -180,7 +178,6 @@ chno_tbl_add(struct chno_tbl * tbl, const char * key, void * val) {
     return 0;
 }
 
-#endif /* ifndef CHNO_M_USE_ZT_TABLE */
 
 chno_t *
 chno_raw_new(void * data, size_t len) {
@@ -226,13 +223,7 @@ chno_map_new(void) {
         return NULL;
     }
 
-#ifndef CHNO_M_USE_ZT_TABLE
     M_MAP(mbr) = chno_tbl_new();
-#else
-    M_MAP(mbr) = zt_table_init("mmap", zt_table_hash_string,
-                               zt_table_compare_string, 32,
-                               ZT_TABLE_FREE_KEYS, NULL);
-#endif
 
     return mbr;
 }
@@ -289,11 +280,7 @@ chno_map_del(chno_t * m, const char * k) {
         return NULL;
     }
 
-#ifndef CHNO_M_USE_ZT_TABLE
     chno_tbl_del(map, k);
-#else
-    zt_table_del(map, k);
-#endif
 
     return found;
 }
@@ -333,11 +320,7 @@ chno_map_add(chno_t * dst, chno_t * src, const char * k) {
     }
 
 
-#ifndef CHNO_M_USE_ZT_TABLE
     found = (chno_t*)chno_tbl_get(dst_map, k);
-#else
-    found = (chno_t *)zt_table_get(dst_map, k);
-#endif
 
     if (found != NULL) {
         if (found->type != M_TYPE_ARRAY) {
@@ -351,28 +334,15 @@ chno_map_add(chno_t * dst, chno_t * src, const char * k) {
             chno_array_add(n, found);
             chno_array_add(n, src);
 
-#ifndef CHNO_M_USE_ZT_TABLE
             chno_tbl_del(dst_map, k);
-#else
-            zt_table_del(dst_map, k);
-#endif
-
-#ifndef CHNO_M_USE_ZT_TABLE
             return chno_tbl_add(dst_map, k, n);
-#else
-            return zt_table_set(dst_map, strdup(k), n);
-#endif
         }
 
         return chno_array_add(found, src);
     }
 
     dst->count += 1;
-#ifndef CHNO_M_USE_ZT_TABLE
     return chno_tbl_add(dst_map, k, src);
-#else
-    return zt_table_set(dst_map, strdup(k), src);
-#endif
 } /* chno_map_add */
 
 int
@@ -421,11 +391,7 @@ chno_len(chno_t * m) {
                 return 0;
             }
 
-#ifndef CHNO_M_USE_ZT_TABLE
             return map->count;
-#else
-            return 0;
-#endif
         case M_TYPE_STRING:
             if (!(str = chno_string(m, &err, NULL))) {
                 return 0;
@@ -471,11 +437,7 @@ chno_for_each(chno_t * m, chno_iter_cb cb, void * arg) {
 
             {
                 void * cb_args[] = { cb, arg };
-#ifndef CHNO_M_USE_ZT_TABLE
                 return chno_tbl_for_each(map, _map_iter, cb_args);
-#else
-                return zt_table_for_each(map, _map_iter, cb_args);
-#endif
             }
             break;
         case M_TYPE_ARRAY:
@@ -1218,11 +1180,7 @@ chno_map_get(chno_t * m, const char * key) {
         return NULL;
     }
 
-#ifndef CHNO_M_USE_ZT_TABLE
     return (chno_t *)chno_tbl_get(map, key);
-#else
-    return (chno_t *)zt_table_get(map, key);
-#endif
 }
 
 chno_t *
@@ -1315,11 +1273,7 @@ chno_map_free(chno_t * m) {
 
     chno_for_each(m, _map_free_iter, NULL);
 
-#ifndef CHNO_M_USE_ZT_TABLE
     chno_tbl_destroy(map);
-#else
-    zt_table_destroy(map);
-#endif
     zt_free(m);
 }
 

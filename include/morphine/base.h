@@ -23,12 +23,8 @@ typedef struct chno_raw chno_raw_t;
 typedef zt_ptr_array    chno_array_t;
 typedef uint8_t         chno_packed_hdr_t;
 
-#ifndef CHNO_M_USE_ZT_TABLE
 struct chno_tbl;
 typedef struct chno_tbl chno_map_t;
-#else
-typedef zt_table        chno_map_t;
-#endif
 
 typedef enum {
     M_TYPE_START = 0,
@@ -63,19 +59,18 @@ typedef union chno_union {
 } chno_union_t;
 
 
-#ifndef CHNO_M_USE_ZT_TABLE
 struct chno_tbln {
     char * key;
     void * val;
 
     struct chno_tbln * next;
 };
+
 struct chno_tbl {
     int                 buckets;
     uint32_t            count;
     struct chno_tbln ** nodes;
 };
-#endif
 
 typedef int (*chno_iter_cb)(const char * key, chno_t * val, void * args);
 
@@ -105,8 +100,8 @@ typedef int (*chno_iter_cb)(const char * key, chno_t * val, void * args);
 #define M_BUFERR(buf)      M_MKERR(buf, "buf too small")
 #define M_BUFCHK(buf, len) (chno_buffer_length(buf) < len)
 
-#define CHNO_M_PROTOTYPE_INTTYPE_FUN(vname, type)                                        \
-    chno_t * chno_ ## vname ## _new(type d);                                             \
+#define CHNO_M_PROTOTYPE_INTTYPE_FUN(vname, type)                                      \
+    chno_t * chno_ ## vname ## _new(type d);                                           \
     int      chno_ ## vname ## _pack(chno_t * mbr, chno_buffer_t * buf, char m_err[]); \
     chno_t * chno_ ## vname ## _unpack(chno_buffer_t * buf, char m_err[]);
 
@@ -192,12 +187,12 @@ int         chno_array_pack(chno_t *, chno_buffer_t *, char m_err[]);
 int         chno_for_each(chno_t *, chno_iter_cb cb, void *);
 
 chno_type_t chno_type(chno_t *);
-//bool        chno_valid_type(chno_t *, chno_type_t);
+/* bool        chno_valid_type(chno_t *, chno_type_t); */
 #define chno_valid_type(mbr, _type) ((mbr->type == _type) ? true : false)
 
-int         chno_set_arg(chno_t * m, void * arg);
-void      * chno_get_arg(chno_t * m);
-void      * chno_data(chno_t *);
+int    chno_set_arg(chno_t * m, void * arg);
+void * chno_get_arg(chno_t * m);
+void * chno_data(chno_t *);
 /* END_C_DECLS */
 
 #endif

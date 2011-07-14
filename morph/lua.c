@@ -24,7 +24,7 @@ chno_from_lua_s(lua_State * L) {
     lua_pushnil(L);
 
     while (lua_next(L, -2)) {
-        chno_t * mbr;
+        chno_t * mbr = NULL;
 
         if (m == NULL) {
             if (lua_type(L, -2) == LUA_TNUMBER) {
