@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <ctype.h>
 #include <alloca.h>
+#include <inttypes.h>
 #include <zt.h>
 
 #include "morphine/util.h"
@@ -53,12 +54,12 @@ chno_raw_print(chno_t * mbr) {
 
 void
 chno_int64_print(chno_t * mbr) {
-    printf(" %zd", M_INT64(mbr));
+    printf(" %" PRId64, M_INT64(mbr));
 }
 
 void
 chno_uint64_print(chno_t * mbr) {
-    printf(" %zu", M_UINT64(mbr));
+    printf(" %" PRIu64, M_UINT64(mbr));
 }
 
 void
