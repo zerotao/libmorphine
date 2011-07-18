@@ -1,7 +1,7 @@
 #ifndef __CHNO_MORPH_JSON_H__
 #define __CHNO_MORPH_JSON_H__
 /* includes */
-#include <json/json.h>
+#include <json.h>
 #include <zt.h>
 
 BEGIN_C_DECLS
