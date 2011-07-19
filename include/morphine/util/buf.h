@@ -1,6 +1,8 @@
 #ifndef __CHNO_BUFFER_H__
 #define __CHNO_BUFFER_H__
 
+#include <stdlib.h>
+
 struct chno_buffer_s;
 typedef struct chno_buffer_s chno_buffer_t;
 typedef struct chno_iovec_s  chno_iovec_t;
