@@ -2,6 +2,7 @@
 #define __CHNO_BASE_H__
 
 /* includes */
+#include <stdio.h>
 #include <stdint.h>
 #include <zlib.h>
 #include <sys/queue.h>
