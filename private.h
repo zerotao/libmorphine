@@ -5,6 +5,18 @@
 
 #define __NATIVE_WORD_BYTE_SZ (__WORDSIZE / 8)
 
+#if (__GNUC__ == 4 && __GNUC_MINOR__ >= 3 && defined(__GNUC_STDC_INLINE__) && !defined(C99_INLINE)) || \
+    (__APPLE_CC__ > 5400 && !defined(C99_INLINE) && __STDC_VERSION__ >= 199901L)
+# define C99_INLINE 1
+#endif
+
+#if C99_INLINE || __GNUC_GNU_INLINE__
+# define INLINE     inline
+# define HAS_ININE  1
+#else
+# define INLINE                                            /* no inline */
+#endif
+
 #define CHNO_M_GENERATE_INTTYPE_FUN(vname, mtype, type)                            \
     chno_t * chno_ ## vname ## _new(type d) {                                      \
         chno_t * mbr = chno_new(mtype);                                            \
@@ -54,7 +66,7 @@
 
 
 #define CHNO_GENERATE_VAL_FUN(_vname, _mtype, _type, _errval)             \
-    inline _type chno_ ## _vname(chno_t * mbr, int * err, char m_err[]) { \
+    INLINE _type chno_ ## _vname(chno_t * mbr, int * err, char m_err[]) { \
                                                                           \
         if (chno_valid_type(mbr, _mtype) == false) {                      \
             M_MKERR(m_err, "member mismatch");                            \
