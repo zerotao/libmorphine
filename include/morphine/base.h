@@ -100,7 +100,7 @@ typedef int (*chno_iter_cb)(const char * key, chno_t * val, void * args);
 
 #define M_MKERR(buf, msg)  do {                                                \
         if (buf != NULL) {                                                     \
-            snprintf(buf, M_ERROR_SZ - 1, "%s: %s", __FUNCTION__, msg ? : ""); \
+            snprintf(buf, M_ERROR_SZ - 1, "%s: %s", __FUNCTION__, msg ? msg : ""); \
         }                                                                      \
 } while (0)
 
