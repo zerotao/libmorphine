@@ -18,6 +18,10 @@ find_package(Lua)
 #find_package(LuaLib)
 find_package(LibZ)
 
+include(CheckDefIncludeFiles)
+
+check_def_include_files(alloca.h HAVE_ALLOCA_H)
+
 set (MORPHINE_SOURCES
 	morphine.c
   util/buf.c

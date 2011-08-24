@@ -1,10 +1,13 @@
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 #include <errno.h>
 #include <ctype.h>
-#include <alloca.h>
 #include <inttypes.h>
 #include <zt.h>
 
@@ -54,6 +57,7 @@ chno_raw_print(chno_t * mbr) {
 
 void
 chno_int64_print(chno_t * mbr) {
+
     printf(" %" PRId64, M_INT64(mbr));
 }
 
