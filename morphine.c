@@ -970,7 +970,7 @@ chno_string_unpack(chno_buffer_t * buf, char m_err[]) {
         return NULL;
     }
 
-    slen = (size_t)(zptr - data) + 1;
+    slen = (size_t)((size_t)zptr - (size_t)data) + 1;
     str  = alloca(slen);
 
     chno_buffer_remove(buf, (void *)str, slen);
@@ -1341,13 +1341,13 @@ chno_free(chno_t * m) {
 
     switch (chno_type(m)) {
         case M_TYPE_MAP:
-            return chno_map_free(m);
+            chno_map_free(m);
         case M_TYPE_ARRAY:
-            return chno_array_free(m);
+            chno_array_free(m);
         case M_TYPE_STRING:
-            return chno_str_free(m);
+            chno_str_free(m);
         case M_TYPE_RAW:
-            return chno_raw_free(m);
+            chno_raw_free(m);
         default:
             zt_free(m);
             break;

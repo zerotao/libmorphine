@@ -70,29 +70,29 @@ void
 chno_print_m(chno_t * mbr) {
     switch (mbr->type) {
         case M_TYPE_MAP:
-            return chno_map_print(mbr);
+            chno_map_print(mbr);
         case M_TYPE_ARRAY:
-            return chno_array_print(mbr);
+            chno_array_print(mbr);
         case M_TYPE_STRING:
-            return chno_string_print(mbr);
+             chno_string_print(mbr);
         case M_TYPE_INT32:
-            return chno_int32_print(mbr);
+             chno_int32_print(mbr);
         case M_TYPE_UINT32:
-            return chno_uint32_print(mbr);
+             chno_uint32_print(mbr);
         case M_TYPE_UINT16:
-            return chno_uint16_print(mbr);
+             chno_uint16_print(mbr);
         case M_TYPE_INT16:
-            return chno_int16_print(mbr);
+             chno_int16_print(mbr);
         case M_TYPE_UINT8:
-            return chno_uint8_print(mbr);
+             chno_uint8_print(mbr);
         case M_TYPE_INT8:
-            return chno_int8_print(mbr);
+             chno_int8_print(mbr);
         case M_TYPE_RAW:
-            return chno_raw_print(mbr);
+             chno_raw_print(mbr);
         case M_TYPE_UINT64:
-            return chno_uint64_print(mbr);
+             chno_uint64_print(mbr);
         case M_TYPE_INT64:
-            return chno_int64_print(mbr);
+             chno_int64_print(mbr);
         default:
             printf(",");
             return;
