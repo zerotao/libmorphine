@@ -9,7 +9,13 @@
 #include <zt.h>
 
 #ifndef __WORDSIZE
-#error Couldnt find native wordsize.
+# if WIN32
+#  define __WORDSIZE 32
+# elif WIN64
+#  define __WORDSIZE 64
+# else
+#  error Couldnt find native wordsize.
+# endif
 #endif
 
 #if __WORDSIZE != 32 && __WORDSIZE != 64
