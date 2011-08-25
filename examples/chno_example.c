@@ -98,6 +98,7 @@ chno_map_example(void) {
     /* chno_maps are simple key/value storage structures. Keys are always
      * strings while values can be any chno datatype */
     chno_t * map = chno_map_new();
+    chno_t * val_1;
 
     /* add some normal key/vals */
     chno_add(map, chno_string_new("val1"), "key1");
@@ -114,7 +115,7 @@ chno_map_example(void) {
     pack_and_unpack(map);
 
     /* maps can be used just like a hash lookup table */
-    chno_t * val_1 = chno_map_get(map, "key1");
+    val_1 = chno_map_get(map, "key1");
 
     if (chno_type(val_1) != M_TYPE_ARRAY) {
         /* remember, we added two values to key1, thus the value becoming an
