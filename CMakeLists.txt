@@ -24,39 +24,39 @@ check_def_include_files(alloca.h HAVE_ALLOCA_H)
 
 set (MORPHINE_SOURCES
 	morphine.c
-  util/buf.c
-  morph/json.c
-  morph/lua.c
-  morph/stdout.c
-)
+    util/buf.c
+    morph/json.c
+    morph/lua.c
+    morph/stdout.c
+    )
 
 set (MORPHINE_HEADERS
 	morphine.h
 	include/base.h
-  include/util/buf.h
+    include/util/buf.h
 	include/morph.h
 	include/morph/json.h
 	include/morph/lua.h
 	include/morph/stdout.h
-)
+    )
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	${LIBZT_INCLUDE_DIR}
 	${LUA_INCLUDE_DIR}
-  ${LUALIB_INCLUDE_DIR}
+    ${LUALIB_INCLUDE_DIR}
 	${LIBJSONC_INCLUDE_DIR}
-  ${LIBZ_INCLUDE_DIR}
-)
+    ${LIBZ_INCLUDE_DIR}
+    )
 
 set(MORPHINE_EXTERNAL_LIBS
 	${LIBZT_LIBRARIES}
 	${LUA_LIBRARIES}
-  ${LUALIB_LIBRARIES}
+    ${LUALIB_LIBRARIES}
 	${LIBJSONC_LIBRARIES}
-  ${LIBZ_LIBRARIES}
-)
+    ${LIBZ_LIBRARIES}
+    )
 
 add_library(libmorphine STATIC ${MORPHINE_SOURCES})
 set_target_properties(libmorphine PROPERTIES OUTPUT_NAME "morphine")
