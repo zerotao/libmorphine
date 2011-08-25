@@ -65,7 +65,7 @@ chno_buffer_drain(chno_buffer_t * b, size_t len) {
 
     if (len < b->len) {
         b->len -= len;
-        memmove(b->buf, b->buf + len, b->len);
+        memmove(b->buf, (void *)((size_t)b->buf + len), b->len);
     } else {
         b->len = 0;
     }
@@ -79,7 +79,7 @@ chno_buffer_add(chno_buffer_t * b, void * data, size_t len) {
         chno_buffer_expand(b, len);
     }
 
-    memcpy((void *)(b->buf + b->len), data, len);
+    memcpy((void *)((size_t)b->buf + b->len), data, len);
     b->len += len;
 
     return 0;
