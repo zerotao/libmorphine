@@ -24,7 +24,7 @@ main(int argc, char ** argv) {
 
     luaL_openlibs(L);
     register_functions(L);
-    luaL_dofile(L, argv[1]);
+    (void)luaL_dofile(L, argv[1]);
     lua_close(L);
 
     return 0;
