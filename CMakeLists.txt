@@ -58,7 +58,8 @@ set(MORPHINE_EXTERNAL_LIBS
 
 add_library(libmorphine STATIC ${MORPHINE_SOURCES})
 set_target_properties(libmorphine PROPERTIES OUTPUT_NAME "morphine")
-target_link_libraries(libmorphine ${MORPHINE_EXTERNAL_LIBS})
+target_link_libraries(libmorphine ${MORPHINE_EXTERNAL_LIBS} Ws2_32)
+
 install (TARGETS libmorphine DESTINATION lib)
 install (FILES morphine.h DESTINATION include)
 install (FILES include/morphine/base.h DESTINATION include/morphine)
