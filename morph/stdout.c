@@ -1,7 +1,3 @@
-#ifdef HAVE_ALLOCA_H
-#include <alloca.h>
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -146,9 +142,9 @@ chno_hexdump(char * data, const size_t len) {
     char       * spaces   = "                                          ";
     unsigned int i;
 
-    line_buf = alloca(len + 30);
-
-    memset(line_buf, 0, len + 30);
+    if(!(line_buf = zt_calloc(char, len + 30))) {
+        return;
+    }
 
     line_buf_off = 0;
     spaces_left  = 41;
@@ -188,5 +184,7 @@ chno_hexdump(char * data, const size_t len) {
 
     printf("%.*s%s\n", spaces_left,
            spaces, line_buf);
+
+    free(line_buf);
 } /* chno_hexdump */
 

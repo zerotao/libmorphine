@@ -1,7 +1,3 @@
-#ifdef HAVE_ALLOCA_H
-#include <alloca.h>
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -946,12 +942,14 @@ chno_raw_unpack(chno_buffer_t * buf, char m_err[]) {
     return m;
 } /* chno_raw_unpack */
 
+#define _UNPACK_BUFF_LEN 1024
 chno_t *
 chno_string_unpack(chno_buffer_t * buf, char m_err[]) {
-    const char * str;
+    char       * str;
     void       * data;
     void       * zptr;
     size_t       slen;
+    char         buffer[_UNPACK_BUFF_LEN];
     chno_t     * m;
 
     if (buf == NULL) {
@@ -971,13 +969,22 @@ chno_string_unpack(chno_buffer_t * buf, char m_err[]) {
     }
 
     slen = (size_t)((size_t)zptr - (size_t)data) + 1;
-    str  = alloca(slen);
+
+    if(slen < _UNPACK_BUFF_LEN) {
+        str = buffer;
+    } else {
+        if(!(str = zt_malloc(char, slen))) {
+            M_MKERR(m_err, "no memory for buffer allocation");
+            return NULL;
+        }
+    }
 
     chno_buffer_remove(buf, (void *)str, slen);
 
-    if (!(m = chno_string_new(str))) {
-        chno_free(m);
-        return NULL;
+    m = chno_string_new(str);
+
+    if (str && slen >= _UNPACK_BUFF_LEN) {
+        free(str);
     }
 
     return m;
