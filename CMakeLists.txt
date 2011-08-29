@@ -58,7 +58,11 @@ set(MORPHINE_EXTERNAL_LIBS
 
 add_library(libmorphine STATIC ${MORPHINE_SOURCES})
 set_target_properties(libmorphine PROPERTIES OUTPUT_NAME "morphine")
-target_link_libraries(libmorphine ${MORPHINE_EXTERNAL_LIBS} Ws2_32)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    set(SYS_EXTRA_LIBS Ws2_32)
+endif()
+
+target_link_libraries(libmorphine ${MORPHINE_EXTERNAL_LIBS} ${SYS_EXTRA_LIBS})
 
 install (TARGETS libmorphine DESTINATION lib)
 install (FILES morphine.h DESTINATION include)
