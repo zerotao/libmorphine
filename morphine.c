@@ -1349,12 +1349,16 @@ chno_free(chno_t * m) {
     switch (chno_type(m)) {
         case M_TYPE_MAP:
             chno_map_free(m);
+            break;
         case M_TYPE_ARRAY:
             chno_array_free(m);
+            break;
         case M_TYPE_STRING:
             chno_str_free(m);
+            break;
         case M_TYPE_RAW:
             chno_raw_free(m);
+            break;
         default:
             zt_free(m);
             break;
