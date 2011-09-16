@@ -24,6 +24,11 @@
 
 /* BEGIN_C_DECLS */
 
+#ifdef __cplusplus__
+extern "C" {
+#endif
+
+
 typedef struct mm       chno_t;
 typedef struct chno_raw chno_raw_t;
 
@@ -200,6 +205,11 @@ chno_type_t chno_type(chno_t *);
 int    chno_set_arg(chno_t * m, void * arg);
 void * chno_get_arg(chno_t * m);
 void * chno_data(chno_t *);
+
+#ifdef __cplusplus__
+}
+#endif
+
 /* END_C_DECLS */
 
 #endif
