@@ -10,6 +10,7 @@ struct chno_buffer_s {
     size_t len;
     size_t max;
     void * buf;
+    void * top;
 };
 
 chno_buffer_t *
@@ -20,6 +21,7 @@ chno_buffer_new(void) {
     b->len = 0;
     b->max = 0;
     b->buf = NULL;
+    b->top = NULL;
 
     return b;
 }
@@ -51,7 +53,12 @@ chno_buffer_expand(chno_buffer_t * b, size_t len) {
         rlen = len;
     }
 
+    if (b->top == NULL) {
+        b->top = b->buf;
+    }
+
     b->buf = realloc(b->buf, b->len + rlen);
+    b->top = b->buf;
     b->max = b->len + rlen;
 
     return 0;
@@ -65,7 +72,8 @@ chno_buffer_drain(chno_buffer_t * b, size_t len) {
 
     if (len < b->len) {
         b->len -= len;
-        memmove(b->buf, b->buf + len, b->len);
+        b->max -= (size_t)(b->top - b->buf);
+        b->buf += len;
     } else {
         b->len = 0;
     }
@@ -144,7 +152,7 @@ chno_buffer_iovec_add(chno_buffer_t * b, chno_iovec_t * vec, int n_vec) {
 void
 chno_buffer_free(chno_buffer_t * b) {
     if (b->buf) {
-        free(b->buf);
+        free(b->top);
     }
 
     free(b);
