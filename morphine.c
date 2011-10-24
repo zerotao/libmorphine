@@ -1,3 +1,7 @@
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1226,7 +1230,7 @@ chno_array_del(chno_t * m, uint32_t idx) {
 }
 
 #if 0
-inline bool
+INLINE bool
 chno_valid_type(chno_t * mbr, chno_type_t type) {
     if (mbr->type != type) {
         return false;
@@ -1237,7 +1241,7 @@ chno_valid_type(chno_t * mbr, chno_type_t type) {
 
 #endif
 
-inline chno_type_t
+INLINE chno_type_t
 chno_type(chno_t * m) {
     if (m == NULL) {
         return 0;

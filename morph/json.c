@@ -3,8 +3,8 @@
 #include <string.h>
 #include <stdint.h>
 #include <errno.h>
-#include <json/json.h>
-#include <json/json_object_private.h>
+#include <json.h>
+#include <json_object_private.h>
 
 #include "morphine/util.h"
 #include "morphine/base.h"

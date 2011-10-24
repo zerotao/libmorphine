@@ -2,13 +2,20 @@
 #define __CHNO_BASE_H__
 
 /* includes */
+#include <stdio.h>
 #include <stdint.h>
 #include <zlib.h>
 #include <sys/queue.h>
 #include <zt.h>
 
 #ifndef __WORDSIZE
-#error Couldnt find native wordsize.
+# if WIN32
+#  define __WORDSIZE 32
+# elif WIN64
+#  define __WORDSIZE 64
+# else
+#  error Couldnt find native wordsize.
+# endif
 #endif
 
 #if __WORDSIZE != 32 && __WORDSIZE != 64
@@ -93,7 +100,7 @@ typedef int (*chno_iter_cb)(const char * key, chno_t * val, void * args);
 
 #define M_MKERR(buf, msg)  do {                                                \
         if (buf != NULL) {                                                     \
-            snprintf(buf, M_ERROR_SZ - 1, "%s: %s", __FUNCTION__, msg ? : ""); \
+            snprintf(buf, M_ERROR_SZ - 1, "%s: %s", __FUNCTION__, msg ? msg : ""); \
         }                                                                      \
 } while (0)
 
