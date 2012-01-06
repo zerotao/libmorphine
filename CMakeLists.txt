@@ -50,8 +50,6 @@ include_directories(
 
 set(MORPHINE_EXTERNAL_LIBS
 	${LIBZT_LIBRARIES}
-	${LUA_LIBRARIES}
-    ${LUALIB_LIBRARIES}
 	${LIBJSONC_LIBRARIES}
     ${LIBZ_LIBRARIES}
     )
@@ -80,4 +78,4 @@ target_link_libraries(chno_example libmorphine)
 add_executable(chno_lua_example ${CMAKE_CURRENT_SOURCE_DIR}/examples/chno_lua_example.c)
 target_link_libraries(chno_lua_example libmorphine ${LUA_LIBRARIES} ${LUALIB_LIBRARIES})
 add_executable(chno_buffer_example ${CMAKE_CURRENT_SOURCE_DIR}/examples/chno_buffer_example.c)
-target_link_libraries(chno_buffer_example libmorphine ${LUA_LIBRARIES} ${LUALIB_LIBRARIES})
+target_link_libraries(chno_buffer_example libmorphine)
