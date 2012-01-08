@@ -87,7 +87,7 @@ chno_buffer_add(chno_buffer_t * b, void * data, size_t len) {
         chno_buffer_expand(b, len);
     }
 
-    memcpy((void *)(b->buf + b->len), data, len);
+    memcpy((void *)((size_t)b->buf + b->len), data, len);
     b->len += len;
 
     return 0;

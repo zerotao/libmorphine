@@ -5,6 +5,10 @@
 #include <errno.h>
 #include <morphine.h>
 
+#ifndef lua_open
+# define lua_open luaL_newstate
+#endif /* lua_open */
+
 static void
 register_functions(lua_State * L) {
     lua_register(L, "chno_from_lua", chno_from_lua_raw);
@@ -24,7 +28,7 @@ main(int argc, char ** argv) {
 
     luaL_openlibs(L);
     register_functions(L);
-    luaL_dofile(L, argv[1]);
+    (void)luaL_dofile(L, argv[1]);
     lua_close(L);
 
     return 0;

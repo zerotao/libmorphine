@@ -20,47 +20,48 @@ find_package(LibZ)
 
 include(CheckDefIncludeFiles)
 
-check_def_include_files(alloca.h HAVE_ALLOCA_H)
-
 set (MORPHINE_SOURCES
 	morphine.c
-  util/buf.c
-  morph/json.c
-  morph/lua.c
-  morph/stdout.c
-)
+    util/buf.c
+    morph/json.c
+    morph/lua.c
+    morph/stdout.c
+    )
 
 set (MORPHINE_HEADERS
 	morphine.h
 	include/base.h
-  include/util/buf.h
+    include/util/buf.h
 	include/morph.h
 	include/morph/json.h
 	include/morph/lua.h
 	include/morph/stdout.h
-)
+    )
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	${LIBZT_INCLUDE_DIR}
 	${LUA_INCLUDE_DIR}
-  ${LUALIB_INCLUDE_DIR}
+    ${LUALIB_INCLUDE_DIR}
 	${LIBJSONC_INCLUDE_DIR}
-  ${LIBZ_INCLUDE_DIR}
-)
+    ${LIBZ_INCLUDE_DIR}
+    )
 
 set(MORPHINE_EXTERNAL_LIBS
 	${LIBZT_LIBRARIES}
-	${LUA_LIBRARIES}
-  ${LUALIB_LIBRARIES}
 	${LIBJSONC_LIBRARIES}
-  ${LIBZ_LIBRARIES}
-)
+    ${LIBZ_LIBRARIES}
+    )
 
 add_library(libmorphine STATIC ${MORPHINE_SOURCES})
 set_target_properties(libmorphine PROPERTIES OUTPUT_NAME "morphine")
-target_link_libraries(libmorphine ${MORPHINE_EXTERNAL_LIBS})
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    set(SYS_EXTRA_LIBS Ws2_32)
+endif()
+
+target_link_libraries(libmorphine ${MORPHINE_EXTERNAL_LIBS} ${SYS_EXTRA_LIBS})
+
 install (TARGETS libmorphine DESTINATION lib)
 install (FILES morphine.h DESTINATION include)
 install (FILES include/morphine/base.h DESTINATION include/morphine)
@@ -77,4 +78,4 @@ target_link_libraries(chno_example libmorphine)
 add_executable(chno_lua_example ${CMAKE_CURRENT_SOURCE_DIR}/examples/chno_lua_example.c)
 target_link_libraries(chno_lua_example libmorphine ${LUA_LIBRARIES} ${LUALIB_LIBRARIES})
 add_executable(chno_buffer_example ${CMAKE_CURRENT_SOURCE_DIR}/examples/chno_buffer_example.c)
-target_link_libraries(chno_buffer_example libmorphine ${LUA_LIBRARIES} ${LUALIB_LIBRARIES})
+target_link_libraries(chno_buffer_example libmorphine)
